@@ -671,11 +671,14 @@ public class QueryBuilder<T, ID> extends StatementBuilder<T, ID> {
 			databaseType.appendOffsetValue(sb, offset);
 		}
 	}
+    
+    private void appendGroupBys(StringBuilder sb){
+        appendGroupBys(sb, true);
+    }
 
-	private void appendGroupBys(StringBuilder sb) {
-		boolean first = true;
+	private boolean appendGroupBys(StringBuilder sb, boolean first) {
 		if (hasGroupStuff()) {
-			appendGroupBys(sb, first);
+			writeGroupBys(sb, first);
 			first = false;
 		}
 		/*
@@ -684,18 +687,19 @@ public class QueryBuilder<T, ID> extends StatementBuilder<T, ID> {
 		 */
 		if (joinList != null) {
 			for (JoinInfo joinInfo : joinList) {
-				if (joinInfo.queryBuilder != null && joinInfo.queryBuilder.hasGroupStuff()) {
-					joinInfo.queryBuilder.appendGroupBys(sb, first);
+				if (joinInfo.queryBuilder != null) {
+					first = joinInfo.queryBuilder.appendGroupBys(sb, first);
 				}
 			}
 		}
+		return first;
 	}
 
 	private boolean hasGroupStuff() {
 		return ((groupByList != null && !groupByList.isEmpty()) || groupByRaw != null);
 	}
 
-	private void appendGroupBys(StringBuilder sb, boolean first) {
+	private void writeGroupBys(StringBuilder sb, boolean first) {
 		if (first) {
 			sb.append("GROUP BY ");
 		}
@@ -716,11 +720,14 @@ public class QueryBuilder<T, ID> extends StatementBuilder<T, ID> {
 		}
 		sb.append(' ');
 	}
+    
+    private void appendOrderBys(StringBuilder sb, List<ArgumentHolder> argList){
+        appendOrderBys(sb, true, argList);
+    }
 
-	private void appendOrderBys(StringBuilder sb, List<ArgumentHolder> argList) {
-		boolean first = true;
+	private boolean appendOrderBys(StringBuilder sb, boolean first, List<ArgumentHolder> argList) {
 		if (hasOrderStuff()) {
-			appendOrderBys(sb, first, argList);
+			writeOrderBys(sb, first, argList);
 			first = false;
 		}
 		/*
@@ -729,18 +736,19 @@ public class QueryBuilder<T, ID> extends StatementBuilder<T, ID> {
 		 */
 		if (joinList != null) {
 			for (JoinInfo joinInfo : joinList) {
-				if (joinInfo.queryBuilder != null && joinInfo.queryBuilder.hasOrderStuff()) {
-					joinInfo.queryBuilder.appendOrderBys(sb, first, argList);
+				if (joinInfo.queryBuilder != null) {
+					first = joinInfo.queryBuilder.appendOrderBys(sb, first, argList);
 				}
 			}
 		}
+        return first;
 	}
 
 	private boolean hasOrderStuff() {
 		return ((orderByList != null && !orderByList.isEmpty()) || orderByRaw != null);
 	}
 
-	private void appendOrderBys(StringBuilder sb, boolean first, List<ArgumentHolder> argList) {
+	private void writeOrderBys(StringBuilder sb, boolean first, List<ArgumentHolder> argList) {
 		if (first) {
 			sb.append("ORDER BY ");
 		}
